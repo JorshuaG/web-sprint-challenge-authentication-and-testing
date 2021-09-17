@@ -2,7 +2,7 @@ const User = require("../model/model");
 
 const checkUsernameTaken = async (req, res, next) => {
   try {
-    const user = await User.findBy({ username: req.body.username });
+    const user = await User.findBy(req.body.username);
 
     if (user) {
       next({ status: 401, message: "username taken" });
@@ -16,7 +16,7 @@ const checkUsernameTaken = async (req, res, next) => {
 
 const checkUsernameExists = async (req, res, next) => {
   try {
-    const user = await User.findBy({ username: req.body.username });
+    const user = await User.findBy(req.body.username);
 
     if (!user) {
       next({ status: 401, message: "invalid credentials" });
@@ -31,7 +31,7 @@ const checkUsernameExists = async (req, res, next) => {
 
 const validateFields = (req, res, next) => {
   if (!req.body.username || !req.body.password) {
-    next({ status: 422, message: "username and password required" });
+    next({ status: 401, message: "username and password required" });
   } else {
     req.body.username = req.body.username.trim();
     next();
