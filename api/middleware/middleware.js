@@ -30,11 +30,20 @@ const checkUsernameExists = async (req, res, next) => {
 };
 
 const validateFields = (req, res, next) => {
-  if (!req.body.username || !req.body.password) {
-    next({ status: 401, message: "username and password required" });
-  } else {
-    req.body.username = req.body.username.trim();
-    next();
+  try {
+    if (
+      !req.body.username ||
+      !req.body.password ||
+      !req.body.username.trim() ||
+      !req.body.password.trim()
+    ) {
+      next({ status: 401, message: "username and password required" });
+    } else {
+      req.body.username = req.body.username.trim();
+      next();
+    }
+  } catch (err) {
+    next(err);
   }
 };
 

@@ -2,7 +2,6 @@
 const request = require("supertest");
 const db = require("../data/dbConfig");
 const server = require("../api/server");
-const { testing } = require("../knexfile");
 const User = require("./model/model");
 
 const user1 = {
@@ -29,10 +28,34 @@ afterAll(async () => {
   await db.destroy();
 });
 
-test("testing for correct environment variable", () => {
-  expect(process.env.DB_ENV).toBe("testing");
-});
-
 test("sanity", () => {
   expect(true).toBe(true);
+});
+
+describe("[POST] Register", () => {
+  test("Register a new User", async () => {
+    await request(server).post("/api/auth/register").send(user1);
+    const user = await db("users").where("username", "KingCoder").first();
+    expect(user).toMatchObject({ username: "KingCoder" });
+  });
+  test("Register responds with 'username taken'", async () => {
+    await request(server).post("/api/auth/register").send(user1);
+    const response = await request(server)
+      .post("/api/auth/register")
+      .send(user1);
+    expect(response.body.message).toMatch("username taken");
+  });
+});
+
+describe("[POST] Login", () => {
+  test("Login responds with the correct message", async () => {
+    await request(server).post("/api/auth/register").send(user1);
+    const res = await request(server).post("/api/auth/login").send(user1);
+    expect(res.body.message).toMatch("welcome, KingCoder");
+  });
+  test("Login responds with proper message on Invalid Credentials", async () => {
+    await request(server).post("/api/auth/register").send(user2);
+    const res = await request(server).post("/api/auth/login").send(user1);
+    expect(res.body.message).toMatch("invalid credentials");
+  });
 });
